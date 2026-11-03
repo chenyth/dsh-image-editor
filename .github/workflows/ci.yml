@@ -13,6 +13,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run check
+      - run: npm run build
       - run: npm test
       - run: npm install --prefix "$RUNNER_TEMP/dsh-host" --ignore-scripts @deepseek-ai/dsh@0.2.1-rc.5
       - run: DSH_HOST_MODULE_DIR="$RUNNER_TEMP/dsh-host/node_modules" node --test test/host.test.js

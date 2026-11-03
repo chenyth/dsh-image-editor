@@ -2,36 +2,42 @@
 
 [中文](README.md)
 
-`dsh-image-editor` aims to bring Shenhuo AI layer editing to **DeepSeek Harness (DSH)**: open an image, edit text/image/shape layers, use AI layer separation, and save or export the result.
+Separate an uploaded image into editable layers from DeepSeek Harness, open the original document in the **system default browser**, then export and download a PSD when needed. This plugin uses Shenhuo's existing web editor and remote MCP service.
 
-**Status: initial development scaffold. Image editing is not available yet.** This repository contains a native DSH plugin entry, localized metadata, a brand icon, validation and packaging workflows, and an integration roadmap. There is no formal release, marketplace submission or Desktop acceptance yet.
+Version `0.2.0`. Prebuilt packages and SHA-256 checksums are available in [GitHub Releases](https://github.com/chenyth/dsh-image-editor/releases). See [acceptance evidence](docs/acceptance.md) for protocol fixtures, DSH checks and paid production testing. Marketplace inclusion requires maintainer review.
+
+## Usage
+
+1. In DSH, open Plugins → Add plugin, enter the release package URL below, install and enable it. If Image Designer is already installed, update it to [0.1.3](https://github.com/chenyth/dsh-image-designer/releases/tag/v0.1.3) or later first. The editor reuses its owner-managed connection without copying tokens. Image Designer is optional for standalone installations.
+2. In a local workspace, invoke `/shenhuo-image-editor` or ask to separate an image. Complete personal-account OAuth when prompted.
+3. Review the current credit quote. Separation starts only after explicit confirmation.
+4. Click the returned document link to edit and save in the default browser. Website login is separate from OAuth and must use the same Shenhuo account.
+5. Ask for the current saved document as a PSD. The plugin reads its revision, exports it without repeating AI separation, then verifies and saves the file. Request PSD initially for one-step delivery.
+
+```text
+https://github.com/chenyth/dsh-image-editor/releases/download/v0.2.0/dsh-image-editor-0.2.0.tgz
+```
+
+Use the prebuilt `.tgz`; no build approval is needed inside DSH. The source repository does not track `dist/`. Build it using the development steps below when working from source.
+
+The red sidebar footer button opens the editor homepage. A keyboard shortcut can be assigned under Settings → General → Edit shortcuts. The plugin does not embed a right sidebar editor. Web-hosted DSH opens a browser tab. Official editor links use this external route even when DSH opens ordinary chat links in its sidebar; unrelated link preferences are unchanged.
+
+PNG/JPEG/WebP/GIF uploads must be inside the current local workspace (20 MiB maximum). PSD downloads are streamed with a 512 MiB limit, verified by header/size/SHA-256, and saved under `shenhuo-layers/` by default without overwriting files. The plugin does not guarantee that every text/effect is editable.
+
+Recovery records preserve typed task IDs, parameters and idempotency keys per account. Use `shenhuo_editor_resume` after interruption; failed downloads never trigger another separation. Standalone credentials live in `~/.dsh-image-editor/` (0700 directory, 0600 files). Shared credentials remain with Image Designer. Temporary transfer tickets are not stored in recovery records. SSH/remote workspaces and Windows need separate validation.
 
 ## Development
 
-Requires Node.js `24.9+`. The initial host contract baseline is DSH `0.2.1-rc.5`.
+Node.js 24.9+:
 
-```bash
+```sh
 npm ci --ignore-scripts
 npm run check
+npm run build
 npm test
-npm pack --dry-run
+npm pack
 ```
 
-To run the actual DSH host contract tests:
+The package includes readable source, a bundled runtime Skill and a prebuilt client bundle; no install-time build runs. React is supplied by DSH, and the MCP SDK version is pinned. For host tests, set `DSH_HOST_MODULE_DIR` to a Node modules directory containing `@deepseek-ai/dsh@0.2.1-rc.5`.
 
-```bash
-npm install --prefix /tmp/dsh-image-editor-host --ignore-scripts @deepseek-ai/dsh@0.2.1-rc.5
-DSH_HOST_MODULE_DIR=/tmp/dsh-image-editor-host/node_modules npm test
-```
-
-The only registered tool is `shenhuo_image_editor_info`. It reports that the editor is under development. It makes no network requests, reads no images, links no account and consumes no credits. The initial package has no runtime dependencies.
-
-## Integration plan
-
-Reuse the existing Shenhuo editor's renderer and host adapter boundaries. First validate the editor UI surface available to DSH plugins, then implement local file access, manual editing and exports. Personal OAuth, cloud persistence and paid AI layer separation follow after the service contract is available.
-
-See [architecture](docs/architecture.md), [roadmap](docs/roadmap.md) and [contributing](CONTRIBUTING.md). `dsh-image-designer` handles designer-led generation; this separately released plugin will handle layer editing. Existing designer MCP tools do not provide a layer editing contract.
-
-## License
-
-New code in this repository is [MIT licensed](LICENSE). Shenhuo names and flame artwork are brand identifiers; their use must not imply unauthorized official endorsement. Future third-party dependencies and assets retain their respective licenses and notices.
+[Architecture and open-source boundary](docs/architecture.md) · [MIT license](LICENSE).

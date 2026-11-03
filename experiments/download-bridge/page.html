@@ -1,0 +1,29 @@
+<!doctype html><html lang="zh"><meta charset="utf-8"><title>PNG 下载桥接验收</title>
+<style>body{font:16px system-ui;margin:32px;color:#211922;background:#f8f7f3}canvas{display:block;width:min(100%,600px);margin:20px 0;border:1px solid #ddd}button{font:inherit;padding:12px 18px;border:0;background:#e63946;color:white;border-radius:8px;cursor:pointer}button:disabled{opacity:.5}pre{white-space:pre-wrap;word-break:break-all}</style>
+<h2>PNG 下载桥接验收</h2><p>本地测试页 · 点击导出后，由 DSH 插件接收短期票据并保存文件。</p>
+<canvas width="600" height="360"></canvas><button id="export">导出 PNG 并交给插件</button> <button id="repeat" disabled>重复发送上次票据</button><pre id="state">正在准备公开测试素材…</pre>
+<script type="module">
+const canvas = document.querySelector('canvas'), ctx = canvas.getContext('2d');
+const state = document.querySelector('#state'), button = document.querySelector('#export');
+let last;
+const icon = new Image(); icon.src = '/icon.png'; await icon.decode();
+ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 600, 360); ctx.drawImage(icon, 36, 45, 230, 230);
+ctx.fillStyle = '#211922'; ctx.font = 'bold 30px sans-serif'; ctx.fillText('DSH PNG', 300, 130);
+ctx.font = '24px sans-serif'; ctx.fillText('下载桥接验收', 300, 180);
+ctx.font = '16px sans-serif'; ctx.fillText('WebView → 插件 → 本地文件', 300, 225);
+state.textContent = '已准备 600 × 360 测试画布。';
+button.onclick = async () => {
+  button.disabled = true;
+  try {
+    const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    const response = await fetch('/exports', { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: png });
+    if (!response.ok) throw new Error('导出失败');
+    last = await response.json();
+    state.textContent = `已导出 PNG：${last.byteLength} 字节\nSHA-256：${last.sha256}\n票据有效期：60 秒。请在插件上方点击“保存 PNG 到本机”。`;
+    document.querySelector('#repeat').disabled = false;
+    window.open(last.handoff, '_blank');
+  } catch (error) { state.textContent = error.message; }
+  finally { button.disabled = false; }
+};
+document.querySelector('#repeat').onclick = () => { if (last) window.open(last.handoff, '_blank'); };
+</script></html>

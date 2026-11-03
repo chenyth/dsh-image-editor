@@ -1,33 +1,76 @@
 {
   "name": "dsh-image-editor",
-  "version": "0.0.1",
-  "description": "Shenhuo AI layer editing integration for DeepSeek Harness. Initial development scaffold; editing is not available yet.",
+  "version": "0.2.0",
+  "description": "Separate image layers through Shenhuo MCP, edit in the default browser, and export PSD files in DeepSeek Harness.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js",
     "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json"
+    "./locale/*.json": "./locale/*.json",
+    "./client": "./dist/client.js"
   },
-  "files": ["src", "locale/*.json", "assets/icon-red-transparent.png", "docs", "cordis.patch.yml", "README.md", "README.en.md", "CONTRIBUTING.md", "CHANGELOG.md", "LICENSE"],
+  "files": [
+    "src",
+    "skills",
+    "scripts/build.mjs",
+    "dist/client.js",
+    "locale/*.json",
+    "assets/icon-red-transparent.png",
+    "docs/architecture.md",
+    "docs/acceptance.md",
+    "docs/roadmap.md",
+    "cordis.patch.yml",
+    "README.md",
+    "README.en.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "check": "node --check src/index.js",
+    "check": "node scripts/check.mjs",
     "test": "node --test test/*.test.js",
-    "prepack": "npm run check"
+    "prepack": "npm run check && npm run build",
+    "build": "node scripts/build.mjs"
   },
   "engines": {
     "node": ">=24.9.0",
     "dsh": ">=0.2.1-rc.5 <0.2.2-0 || >=0.2.2-alpha.2 <0.3.0-0"
   },
-  "keywords": ["dsh-plugin", "deepseek-harness", "shenhuo", "image-editor", "layer-editor"],
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "shenhuo",
+    "image-editor",
+    "layer-editor"
+  ],
   "author": "chenyth",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chenyth/dsh-image-editor.git"
   },
-  "bugs": { "url": "https://github.com/chenyth/dsh-image-editor/issues" },
+  "bugs": {
+    "url": "https://github.com/chenyth/dsh-image-editor/issues"
+  },
   "homepage": "https://github.com/chenyth/dsh-image-editor#readme",
   "icon": "./assets/icon-red-transparent.png",
-  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2"
+  }
 }
